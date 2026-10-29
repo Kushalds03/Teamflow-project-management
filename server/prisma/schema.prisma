@@ -1,0 +1,225 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// ENUMS
+// ==========================================
+
+enum SystemRole {
+  ADMIN
+  USER
+}
+
+enum ProjectRole {
+  LEAD
+  MAINTAINER
+  CONTRIBUTOR
+  VIEWER
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  ON_HOLD
+  COMPLETED
+}
+
+enum ActivityType {
+  TASK_COMPLETED
+  PROJECT_CREATED
+  TASK_CREATED
+  TASK_STATUS_CHANGED
+  MEMBER_ASSIGNED
+  COMMENT_ADDED
+}
+
+// ==========================================
+// MODELS
+// ==========================================
+
+model User {
+  id                  String          @id @default(uuid())
+  email               String          @unique
+  name                String
+  passwordHash        String          @default("")
+  role                SystemRole      @default(USER)
+  jobTitle            String?
+  department          String?
+  avatarUrl           String?
+  status              String          @default("active") // "active" | "away" | "offline"
+  bio                 String?
+
+  // Preferences & Settings
+  theme               String          @default("light")
+  compactMode         Boolean         @default(false)
+  emailNotifications  Boolean         @default(true)
+  pushNotifications   Boolean         @default(true)
+  weeklyDigest        Boolean         @default(true)
+  taskAssignmentAlerts Boolean        @default(true)
+
+  // Relationships
+  ledProjects         Project[]       @relation("ProjectLead")
+  memberships         ProjectMember[]
+  assignedTasks       Task[]          @relation("TaskAssignee")
+  createdTasks        Task[]          @relation("TaskCreator")
+  comments            Comment[]
+  activities          Activity[]
+
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  @@index([email])
+}
+
+model Workspace {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  description String?
+
+  projects    Project[]
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([slug])
+}
+
+model Project {
+  id          String          @id @default(uuid())
+  name        String
+  description String?
+  category    String          @default("General")
+  status      ProjectStatus   @default(IN_PROGRESS)
+  priority    TaskPriority    @default(MEDIUM)
+  dueDate     DateTime?
+  startDate   DateTime?
+
+  // Workspace
+  workspaceId String
+  workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  // Lead
+  leadId      String
+  lead        User            @relation("ProjectLead", fields: [leadId], references: [id])
+
+  // Relationships
+  members     ProjectMember[]
+  tasks       Task[]
+  activities  Activity[]
+
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([workspaceId])
+  @@index([leadId])
+  @@index([status])
+}
+
+model ProjectMember {
+  id        String       @id @default(uuid())
+  projectId String
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      ProjectRole  @default(CONTRIBUTOR)
+  joinedAt  DateTime     @default(now())
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@index([projectId])
+}
+
+model Task {
+  id             String        @id @default(uuid())
+  title          String
+  description    String?
+  priority       TaskPriority  @default(MEDIUM)
+  status         TaskStatus    @default(TODO)
+  dueDate        DateTime?
+  estimatedHours Float?
+  tags           String[]      @default([])
+
+  // Project relation
+  projectId      String
+  project        Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // Assignee relation
+  assigneeId     String?
+  assignee       User?         @relation("TaskAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  // Creator relation
+  creatorId      String
+  creator        User          @relation("TaskCreator", fields: [creatorId], references: [id])
+
+  // Comments and activities
+  comments       Comment[]
+  activities     Activity[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  content   String
+  taskId    String
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([taskId])
+  @@index([authorId])
+}
+
+model Activity {
+  id          String        @id @default(uuid())
+  type        ActivityType
+  title       String
+  description String
+  entityId    String?
+
+  userId      String
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  projectId   String?
+  project     Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  taskId      String?
+  task        Task?         @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime      @default(now())
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([taskId])
+}
