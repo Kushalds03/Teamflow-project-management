@@ -18,6 +18,8 @@ import {
   projectIdParamSchema,
   listProjectsQuerySchema
 } from '../validators/project.validator';
+import { createTask, listTasks } from '../controllers/task.controller';
+import { projectTasksParamSchema, createTaskSchema } from '../validators/task.validator';
 
 const router = Router();
 
@@ -88,6 +90,32 @@ router.post(
   requireProjectAccess(ProjectRole.MAINTAINER),
   validateBody(addProjectMemberSchema),
   addProjectMember
+);
+
+/**
+ * POST /api/projects/:projectId/tasks
+ * Create a new task within a project (requires CONTRIBUTOR role or higher).
+ */
+router.post(
+  '/:projectId/tasks',
+  validateParams(projectTasksParamSchema),
+  requireProjectAccess(ProjectRole.CONTRIBUTOR),
+  validateBody(createTaskSchema),
+  createTask
+);
+
+/**
+ * GET /api/projects/:projectId/tasks
+ * List tasks belonging to a specific project (requires VIEWER role or higher).
+ */
+router.get(
+  '/:projectId/tasks',
+  validateParams(projectTasksParamSchema),
+  requireProjectAccess(ProjectRole.VIEWER),
+  (req, res) => {
+    req.query.projectId = req.params.projectId;
+    return listTasks(req, res);
+  }
 );
 
 export default router;

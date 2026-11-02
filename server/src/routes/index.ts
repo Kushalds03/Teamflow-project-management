@@ -2,6 +2,7 @@ import { Router } from 'express';
 import healthRoutes from './health.routes';
 import authRoutes from './auth.routes';
 import projectRoutes from './project.routes';
+import taskRoutes from './task.routes';
 
 const router = Router();
 
@@ -13,5 +14,8 @@ router.use('/auth', authRoutes);
 
 // Mount Projects under /api/projects
 router.use('/projects', projectRoutes);
+
+// Mount Tasks under /api/tasks
+router.use('/tasks', taskRoutes);
 
 export default router;
