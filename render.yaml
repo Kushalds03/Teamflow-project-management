@@ -11,8 +11,6 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 5000
       - key: CLIENT_URL
         sync: false
       - key: DATABASE_URL
@@ -25,3 +23,4 @@ services:
         value: teamflow_token
       - key: BCRYPT_ROUNDS
         value: 10
+

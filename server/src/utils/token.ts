@@ -43,7 +43,8 @@ export function setAuthCookie(res: Response, token: string): void {
   res.cookie(env.COOKIE_NAME, token, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    // Cross-site cookie between Vercel (*.vercel.app) and Render (*.onrender.com) requires sameSite='none' with secure=true
+    sameSite: isProduction ? 'none' : 'lax',
     maxAge: maxAgeMs,
     path: '/'
   });
@@ -58,7 +59,7 @@ export function clearAuthCookie(res: Response): void {
   res.clearCookie(env.COOKIE_NAME, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? 'strict' : 'lax',
+    sameSite: isProduction ? 'none' : 'lax',
     path: '/'
   });
 }

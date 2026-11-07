@@ -19,11 +19,16 @@ export const createApp = (): Application => {
   app.use(
     cors({
       origin: (origin, callback) => {
-        // Allow requests with no origin (e.g. mobile apps, curl, postman)
-        if (!origin || allowedOrigins.includes(origin)) {
+        // Allow requests with no origin (e.g. mobile apps, curl, postman) or matching origins
+        if (
+          !origin ||
+          allowedOrigins.includes(origin) ||
+          origin.endsWith('.vercel.app') ||
+          origin.endsWith('.onrender.com')
+        ) {
           callback(null, true);
         } else {
-          callback(null, true); // Permissive for local dev
+          callback(null, true); // Permissive fallback
         }
       },
       credentials: true,
