@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 export const MyTasksPage: React.FC = () => {
-  const { tasks, currentUser, changeTaskStatus, deleteTask, projects, searchTerm } = useApp();
+  const { tasks, currentUser, changeTaskStatus, deleteTask, projects, searchTerm, setSelectedTask } = useApp();
   const { onOpenCreateTask } = useOutletContext<{
     onOpenCreateProject: () => void;
     onOpenCreateTask: () => void;
@@ -249,7 +249,8 @@ export const MyTasksPage: React.FC = () => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h4
-                        className={`text-sm font-semibold tracking-tight transition-colors ${
+                        onClick={() => setSelectedTask(task)}
+                        className={`text-sm font-semibold tracking-tight transition-colors cursor-pointer hover:underline ${
                           isDone
                             ? 'line-through text-slate-400'
                             : 'text-slate-900 group-hover:text-indigo-600'

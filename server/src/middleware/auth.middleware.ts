@@ -45,9 +45,21 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
       return next();
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: payload.id }
-    });
+    let user = null;
+    try {
+      user = await prisma.user.findUnique({
+        where: { id: payload.id }
+      });
+    } catch (dbErr) {
+      // Retry once on transient network/pool connection reset
+      try {
+        user = await prisma.user.findUnique({
+          where: { id: payload.id }
+        });
+      } catch {
+        user = null;
+      }
+    }
 
     if (!user) {
       return next();

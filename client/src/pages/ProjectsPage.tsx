@@ -15,11 +15,12 @@ import {
   CheckCircle2,
   Trash2,
   LayoutGrid,
-  List
+  List,
+  Edit3
 } from 'lucide-react';
 
 export const ProjectsPage: React.FC = () => {
-  const { projects, deleteProject, searchTerm } = useApp();
+  const { projects, deleteProject, searchTerm, setSelectedProject } = useApp();
   const { onOpenCreateProject } = useOutletContext<{
     onOpenCreateProject: () => void;
     onOpenCreateTask: () => void;
@@ -182,7 +183,10 @@ export const ProjectsPage: React.FC = () => {
                   </div>
 
                   {/* Title & Description */}
-                  <h3 className="text-base font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                  <h3
+                    onClick={() => setSelectedProject(project)}
+                    className="text-base font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors line-clamp-1 cursor-pointer hover:underline"
+                  >
                     {project.name}
                   </h3>
                   <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
@@ -217,10 +221,17 @@ export const ProjectsPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Footer: Members & Quick Delete */}
+                {/* Footer: Members & Quick Actions */}
                 <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
                   <AvatarGroup users={project.members} max={3} size="xs" />
                   <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setSelectedProject(project)}
+                      className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-md hover:bg-indigo-50 transition-colors cursor-pointer"
+                      title="Manage Project"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
                     <button
                       onClick={() => setProjectToDelete(project)}
                       className="p-1.5 text-slate-400 hover:text-rose-600 rounded-md hover:bg-rose-50 transition-colors cursor-pointer"
@@ -256,7 +267,12 @@ export const ProjectsPage: React.FC = () => {
                 {filteredProjects.map((project) => (
                   <tr key={project.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900">{project.name}</div>
+                      <div
+                        onClick={() => setSelectedProject(project)}
+                        className="font-semibold text-slate-900 hover:text-indigo-600 transition-colors cursor-pointer hover:underline"
+                      >
+                        {project.name}
+                      </div>
                       <div className="text-[11px] text-slate-500 max-w-xs truncate">
                         {project.description}
                       </div>
@@ -288,13 +304,22 @@ export const ProjectsPage: React.FC = () => {
                       <AvatarGroup users={project.members} max={3} size="xs" />
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => setProjectToDelete(project)}
-                        className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
-                        title="Delete project"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => setSelectedProject(project)}
+                          className="p-1 text-slate-400 hover:text-indigo-600 rounded hover:bg-indigo-50 transition-colors cursor-pointer"
+                          title="Manage project"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => setProjectToDelete(project)}
+                          className="p-1 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Delete project"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

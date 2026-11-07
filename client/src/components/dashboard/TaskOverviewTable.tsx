@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export const TaskOverviewTable: React.FC = () => {
-  const { tasks, changeTaskStatus, searchTerm } = useApp();
+  const { tasks, changeTaskStatus, searchTerm, setSelectedTask } = useApp();
   const navigate = useNavigate();
 
   const [tableSearch, setTableSearch] = useState('');
@@ -143,7 +143,10 @@ export const TaskOverviewTable: React.FC = () => {
 
                     {/* Task Title */}
                     <td className="py-3 px-4">
-                      <div className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors max-w-xs truncate">
+                      <div
+                        onClick={() => setSelectedTask(task)}
+                        className="font-medium text-slate-900 group-hover:text-indigo-600 transition-colors max-w-xs truncate cursor-pointer hover:underline"
+                      >
                         {task.title}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5">

@@ -20,6 +20,10 @@ import {
 } from '../validators/project.validator';
 import { createTask, listTasks } from '../controllers/task.controller';
 import { projectTasksParamSchema, createTaskSchema } from '../validators/task.validator';
+import { listProjectActivities } from '../controllers/activity.controller';
+import { projectActivitiesParamSchema, listActivitiesQuerySchema } from '../validators/activity.validator';
+import { getProjectAnalytics } from '../controllers/analytics.controller';
+import { projectAnalyticsParamSchema } from '../validators/analytics.validator';
 
 const router = Router();
 
@@ -116,6 +120,29 @@ router.get(
     req.query.projectId = req.params.projectId;
     return listTasks(req, res);
   }
+);
+
+/**
+ * GET /api/projects/:projectId/activities
+ * List activity feed for a project (requires VIEWER role or higher).
+ */
+router.get(
+  '/:projectId/activities',
+  validateParams(projectActivitiesParamSchema),
+  requireProjectAccess(ProjectRole.VIEWER),
+  validateQuery(listActivitiesQuerySchema),
+  listProjectActivities
+);
+
+/**
+ * GET /api/projects/:projectId/analytics
+ * Retrieve project metrics and performance analytics (requires VIEWER role or higher).
+ */
+router.get(
+  '/:projectId/analytics',
+  validateParams(projectAnalyticsParamSchema),
+  requireProjectAccess(ProjectRole.VIEWER),
+  getProjectAnalytics
 );
 
 export default router;

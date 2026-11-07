@@ -20,6 +20,10 @@ import {
   updateTaskAssigneeSchema,
   listTasksQuerySchema
 } from '../validators/task.validator';
+import { listTaskComments, createComment } from '../controllers/comment.controller';
+import { taskCommentsParamSchema, createCommentSchema } from '../validators/comment.validator';
+import { listTaskActivities } from '../controllers/activity.controller';
+import { taskActivitiesParamSchema, listActivitiesQuerySchema } from '../validators/activity.validator';
 
 const router = Router();
 
@@ -106,6 +110,41 @@ router.delete(
   validateParams(taskIdParamSchema),
   requireTaskAccess(true),
   deleteTask
+);
+
+/**
+ * GET /api/tasks/:taskId/comments
+ * List all comments for a task in chronological order.
+ */
+router.get(
+  '/:taskId/comments',
+  validateParams(taskCommentsParamSchema),
+  requireTaskAccess(false),
+  listTaskComments
+);
+
+/**
+ * POST /api/tasks/:taskId/comments
+ * Create a new comment on a task.
+ */
+router.post(
+  '/:taskId/comments',
+  validateParams(taskCommentsParamSchema),
+  requireTaskAccess(true),
+  validateBody(createCommentSchema),
+  createComment
+);
+
+/**
+ * GET /api/tasks/:taskId/activities
+ * List activity history for a specific task (requires VIEWER role or higher on parent project).
+ */
+router.get(
+  '/:taskId/activities',
+  validateParams(taskActivitiesParamSchema),
+  requireTaskAccess(false),
+  validateQuery(listActivitiesQuerySchema),
+  listTaskActivities
 );
 
 export default router;

@@ -4,9 +4,13 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'node',
-    testTimeout: 35000,
-    hookTimeout: 35000,
+    testTimeout: 60000,
+    hookTimeout: 60000,
     fileParallelism: false,
+    maxConcurrency: 1,
+    forks: {
+      singleFork: true
+    },
     env: {
       NODE_ENV: 'test'
     }

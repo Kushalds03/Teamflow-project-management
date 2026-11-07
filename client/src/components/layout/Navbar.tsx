@@ -16,7 +16,9 @@ import {
   Settings,
   FolderPlus,
   CheckSquare,
-  ChevronRight
+  ChevronRight,
+  LogIn,
+  LogOut
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -36,7 +38,10 @@ export const Navbar: React.FC<NavbarProps> = ({
     markAllNotificationsRead,
     searchTerm,
     setSearchTerm,
-    setMobileMenuOpen
+    setMobileMenuOpen,
+    isAuthenticated,
+    logout,
+    setAuthModalOpen
   } = useApp();
 
   const [notificationsOpen, setNotificationsOpen] = useState(false);
@@ -294,6 +299,32 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Settings className="w-4 h-4 text-slate-400" />
                   <span>Account Settings</span>
                 </button>
+
+                <div className="border-t border-slate-100 my-1" />
+
+                {isAuthenticated ? (
+                  <button
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      logout();
+                    }}
+                    className="w-full px-3.5 py-2 text-left text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4 text-rose-500" />
+                    <span>Sign Out</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      setAuthModalOpen(true);
+                    }}
+                    className="w-full px-3.5 py-2 text-left text-xs text-indigo-600 hover:bg-indigo-50 font-semibold flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4 text-indigo-600" />
+                    <span>Sign In / Demo Accounts</span>
+                  </button>
+                )}
               </div>
             </div>
           )}

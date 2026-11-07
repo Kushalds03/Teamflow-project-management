@@ -10,6 +10,7 @@ declare global {
       projectRole?: ProjectRole;
       projectMember?: any;
       task?: any;
+      comment?: any;
     }
   }
 }
@@ -213,3 +214,108 @@ export const requireTaskAccess = (requireWrite = false) => {
     }
   };
 };
+
+/**
+ * Validates comment access and author/role permissions.
+ * Confirms comment belongs to a task in a project the user can access.
+ * Enforces that viewers have read-only access.
+ * For write operations (PUT, DELETE), enforces that the acting user is the author,
+ * or a project MAINTAINER, LEAD, or System ADMIN.
+ */
+export const requireCommentAccess = (requireWrite = false) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = req.user;
+    if (!user) {
+      return sendError(res, 'Authentication required.', 401, 'UNAUTHORIZED');
+    }
+
+    const commentId = req.params.commentId || req.params.id;
+    if (!commentId || typeof commentId !== 'string') {
+      return sendError(res, 'Valid comment ID is required.', 400, 'COMMENT_ID_REQUIRED');
+    }
+
+    try {
+      const comment = await prisma.comment.findUnique({
+        where: { id: commentId },
+        include: {
+          task: {
+            include: {
+              project: {
+                include: {
+                  members: {
+                    where: { userId: user.id }
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      if (!comment) {
+        return sendError(res, 'Comment not found.', 404, 'COMMENT_NOT_FOUND');
+      }
+
+      // Check task mismatch if taskId is present in route params or body
+      const taskId = req.params.taskId || req.body?.taskId;
+      if (taskId && comment.taskId !== taskId) {
+        return sendError(res, 'Comment does not belong to the specified task.', 400, 'COMMENT_TASK_MISMATCH');
+      }
+
+      let effectiveRole: ProjectRole | null = null;
+      if (user.role === SystemRole.ADMIN || comment.task.project.leadId === user.id) {
+        effectiveRole = ProjectRole.LEAD;
+      } else if (comment.task.project.members.length > 0) {
+        effectiveRole = comment.task.project.members[0].role;
+      }
+
+      if (!effectiveRole) {
+        return sendError(
+          res,
+          'Access denied. You do not have access to the project containing this comment.',
+          403,
+          'FORBIDDEN_COMMENT_ACCESS'
+        );
+      }
+
+      const isWrite = requireWrite || ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+      if (effectiveRole === ProjectRole.VIEWER && isWrite) {
+        return sendError(
+          res,
+          'Access denied. Viewers have read-only permissions and cannot modify comments.',
+          403,
+          'VIEWER_READ_ONLY'
+        );
+      }
+
+      // For write operations on comments (editing or deleting), check author or maintainer/lead/admin permissions
+      if (isWrite) {
+        const isAuthor = comment.authorId === user.id;
+        const isMaintainerOrAbove =
+          user.role === SystemRole.ADMIN ||
+          effectiveRole === ProjectRole.LEAD ||
+          effectiveRole === ProjectRole.MAINTAINER;
+
+        if (!isAuthor && !isMaintainerOrAbove) {
+          return sendError(
+            res,
+            'Access denied. Only the comment author, project maintainer, or lead can modify this comment.',
+            403,
+            'INSUFFICIENT_PROJECT_ROLE'
+          );
+        }
+      }
+
+      req.comment = comment;
+      req.task = comment.task;
+      req.project = comment.task.project;
+      req.projectRole = effectiveRole;
+
+      next();
+    } catch (error) {
+      console.error('Error during comment access check:', error);
+      return sendError(res, 'Failed to verify comment permissions.', 500, 'INTERNAL_SERVER_ERROR');
+    }
+  };
+};
+

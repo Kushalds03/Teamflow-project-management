@@ -7,7 +7,7 @@ import { AvatarGroup } from '../ui/Avatar';
 import { Calendar, ArrowRight, FolderKanban, CheckCircle } from 'lucide-react';
 
 export const ProjectProgressList: React.FC = () => {
-  const { projects } = useApp();
+  const { projects, setSelectedProject } = useApp();
   const navigate = useNavigate();
 
   // Show top 4 projects sorted by activity/priority
@@ -47,7 +47,7 @@ export const ProjectProgressList: React.FC = () => {
           displayProjects.map((project) => (
           <div
             key={project.id}
-            onClick={() => navigate('/projects')}
+            onClick={() => setSelectedProject(project)}
             className="p-5 hover:bg-slate-50/80 transition-colors cursor-pointer group"
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-3">

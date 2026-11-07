@@ -29,6 +29,8 @@ export interface Project {
   priority: TaskPriority;
   totalTasks: number;
   completedTasks: number;
+  workspaceId?: string;
+  workspaceName?: string;
 }
 
 export interface Task {

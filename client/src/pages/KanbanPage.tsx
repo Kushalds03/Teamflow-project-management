@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export const KanbanPage: React.FC = () => {
-  const { tasks, changeTaskStatus, projects, searchTerm } = useApp();
+  const { tasks, changeTaskStatus, projects, searchTerm, setSelectedTask } = useApp();
   const { onOpenCreateTask } = useOutletContext<{
     onOpenCreateProject: () => void;
     onOpenCreateTask: () => void;
@@ -208,7 +208,10 @@ export const KanbanPage: React.FC = () => {
                         </div>
 
                         {/* Title */}
-                        <h4 className="text-xs font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug">
+                        <h4
+                          onClick={() => setSelectedTask(task)}
+                          className="text-xs font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors leading-snug cursor-pointer hover:underline"
+                        >
                           {task.title}
                         </h4>
 

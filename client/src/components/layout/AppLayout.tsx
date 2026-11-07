@@ -4,11 +4,22 @@ import { Sidebar } from './Sidebar';
 import { Navbar } from './Navbar';
 import { ToastContainer } from '../ui/ToastContainer';
 import { CreateProjectModal } from '../projects/CreateProjectModal';
+import { ProjectDetailModal } from '../projects/ProjectDetailModal';
 import { CreateTaskModal } from '../tasks/CreateTaskModal';
+import { TaskDetailModal } from '../tasks/TaskDetailModal';
+import { AuthModal } from '../auth/AuthModal';
 import { useApp } from '../../context/AppContext';
 
 export const AppLayout: React.FC = () => {
-  const { sidebarCollapsed } = useApp();
+  const {
+    sidebarCollapsed,
+    authModalOpen,
+    setAuthModalOpen,
+    selectedTask,
+    setSelectedTask,
+    selectedProject,
+    setSelectedProject
+  } = useApp();
   const [createProjectOpen, setCreateProjectOpen] = useState(false);
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
@@ -46,6 +57,26 @@ export const AppLayout: React.FC = () => {
       <CreateTaskModal
         isOpen={createTaskOpen}
         onClose={() => setCreateTaskOpen(false)}
+      />
+
+      {/* Task Details & Discussion Modal */}
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={selectedTask !== null}
+        onClose={() => setSelectedTask(null)}
+      />
+
+      {/* Project Details & Management Modal */}
+      <ProjectDetailModal
+        project={selectedProject}
+        isOpen={selectedProject !== null}
+        onClose={() => setSelectedProject(null)}
+      />
+
+      {/* User Authentication & Account Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
       />
     </div>
   );
