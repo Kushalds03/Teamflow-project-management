@@ -1,12 +1,21 @@
 # TeamFlow — Enterprise Project Management & Collaboration Platform
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge&logo=vercel)](https://teamflow-project-management-liart.vercel.app/)
+[![Backend API](https://img.shields.io/badge/Backend%20API-Render-46E3B7?style=for-the-badge&logo=render)](https://teamflow-api-w75x.onrender.com)
+[![Database](https://img.shields.io/badge/Database-Neon%20PostgreSQL-00E599?style=for-the-badge&logo=postgresql)](https://neon.tech/)
+
 [![Node.js](https://img.shields.io/badge/Node.js-22.x-green.svg)](https://nodejs.org/)
 [![React](https://img.shields.io/badge/React-19.x-blue.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748.svg)](https://www.prisma.io/)
-[![Neon](https://img.shields.io/badge/Database-Neon%20PostgreSQL-00E599.svg)](https://neon.tech/)
 [![Vitest](https://img.shields.io/badge/Tests-269%20Passing-brightgreen.svg)](https://vitest.dev/)
 [![License](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+> **🚀 Live Production Deployments:**
+> - **🌐 Web Application (Frontend):** [https://teamflow-project-management-liart.vercel.app/](https://teamflow-project-management-liart.vercel.app/)
+> - **⚡ REST API Server (Backend):** [https://teamflow-api-w75x.onrender.com](https://teamflow-api-w75x.onrender.com)
+> - **🩺 API Health Check:** [https://teamflow-api-w75x.onrender.com/api/health](https://teamflow-api-w75x.onrender.com/api/health)
+> - **🗄️ Database:** [Neon Serverless PostgreSQL](https://neon.tech/) (AWS `us-east-2`)
 
 TeamFlow is an enterprise-grade, full-stack project management and collaboration platform engineered with modern React 19, TypeScript, Node.js, Express, Prisma ORM, and Neon PostgreSQL. Built for high-velocity software engineering organizations, it combines interactive sprint tracking, Kanban pipelines, real-time audit feeds, task discussions, and granular role-based access control (RBAC).
 
@@ -69,6 +78,11 @@ Modern distributed engineering teams face significant friction coordinating acro
 - **Validation**: [Zod v4](https://zod.dev/)
 - **Security**: `bcryptjs`, `jsonwebtoken`, `cookie-parser`, `cors`, `express-rate-limit`
 - **Testing**: [Vitest v5](https://vitest.dev/) + [Supertest](https://github.com/ladjs/supertest)
+
+### Cloud Infrastructure & Deployment Architecture
+- **Frontend Hosting**: [Vercel](https://vercel.com/) (Global Edge CDN, CI/CD from Git, SPA rewrites)
+- **Backend Hosting**: [Render](https://render.com/) (Managed Node.js container service, `render.yaml` infrastructure-as-code)
+- **Database Engine**: [Neon Serverless PostgreSQL](https://neon.tech/) (AWS `us-east-2`, SSL mode with PgBouncer connection pooling)
 
 ---
 
@@ -366,23 +380,52 @@ npm run build
 
 ## 10. Production Deployment
 
-### Frontend (Vercel)
-1. Import repository on [Vercel](https://vercel.com).
-2. Set Root Directory to `client`.
-3. Add Environment Variable:
-   - `VITE_API_URL` = `https://your-backend-api.onrender.com/api`
-4. Deploy! SPA rewrites are automatically handled by `client/vercel.json`.
+TeamFlow is deployed across a modern, decoupled cloud architecture:
+- **Frontend SPA**: Hosted on **Vercel** with global Edge CDN caching and automatic client routing rewrites.
+- **Backend API**: Hosted on **Render** as a high-availability Node.js/Express service.
+- **Relational Database**: Managed on **Neon Serverless PostgreSQL** with pooled connections.
 
-### Backend (Render / Node.js)
-1. Create a New Web Service on [Render](https://render.com).
-2. Set Root Directory to `server` (or use `render.yaml`).
-3. Build Command: `npm install && npx prisma generate && npm run build`
-4. Start Command: `npm start`
-5. Configure Environment Variables:
-   - `NODE_ENV` = `production`
-   - `DATABASE_URL` = Your Neon PostgreSQL pooled connection string
-   - `CLIENT_URL` = Your deployed Vercel frontend URL
-   - `JWT_SECRET` = A strong 32+ character random string
+### 🌐 Live Production Environments
+
+| Component | Provider | Live URL | Status / Notes |
+| :--- | :--- | :--- | :--- |
+| **Frontend Application** | **Vercel** | [https://teamflow-project-management-liart.vercel.app/](https://teamflow-project-management-liart.vercel.app/) | React 19 SPA with client-side routing |
+| **Backend REST API** | **Render** | [https://teamflow-api-w75x.onrender.com](https://teamflow-api-w75x.onrender.com) | Express + Prisma runtime |
+| **API Base URL** | **Render** | `https://teamflow-api-w75x.onrender.com/api` | Required value for `VITE_API_URL` |
+| **Health Check Endpoint** | **Render** | [https://teamflow-api-w75x.onrender.com/api/health](https://teamflow-api-w75x.onrender.com/api/health) | Live DB connectivity & latency probe |
+| **Database** | **Neon** | Serverless PostgreSQL (AWS `us-east-2`) | SSL & PgBouncer connection pooling |
+
+---
+
+### Deployment Architecture & Configuration
+
+#### 1. Frontend Deployment (Vercel)
+- **Repository Root**: `client`
+- **Framework Preset**: Vite
+- **Build Command**: `tsc -b && vite build` (or `npm run build`)
+- **Output Directory**: `dist`
+- **Environment Variables**:
+  ```env
+  VITE_API_URL=https://teamflow-api-w75x.onrender.com/api
+  ```
+- **SPA Routing**: Configured via `client/vercel.json` with rewrite rules directing all subpaths to `/index.html`.
+
+#### 2. Backend Deployment (Render)
+- **Root Directory**: `server`
+- **Environment**: Node
+- **Build Command**: `npm install --include=dev && npx prisma generate && npm run build`
+- **Start Command**: `npm start`
+- **Health Check Path**: `/api/health`
+- **Environment Variables** (configured securely in Render Environment Dashboard):
+  - `NODE_ENV` = `production`
+  - `PORT` = `10000` (assigned by Render)
+  - `CLIENT_URL` = `https://teamflow-project-management-liart.vercel.app`
+  - `DATABASE_URL` = Pooled Neon PostgreSQL connection string (`?sslmode=require&pgbouncer=true&connect_timeout=30`)
+  - `JWT_SECRET` = Cryptographically secure 32+ character random passphrase
+  - `JWT_EXPIRES_IN` = `7d`
+  - `COOKIE_NAME` = `teamflow_token`
+  - `BCRYPT_ROUNDS` = `10`
+- **Blueprint Automation**: Deployment descriptors configured in both root `render.yaml` and `server/render.yaml`.
 
 ---
 
